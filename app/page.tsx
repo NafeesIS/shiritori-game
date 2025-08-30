@@ -35,7 +35,14 @@ const HomePage = () => {
     if (word.length < 4) return toast.error("Word must be at least 4 letters!");
     if (historyWord.includes(word))
       return toast.error("This word is already used try another one!");
-
+    if (historyWord && historyWord.length > 0) {
+      const lastWord = historyWord[historyWord.length - 1];
+      if (word[0] !== lastWord[lastWord.length - 1]) {
+        return toast.error(
+          "Word Must me start with last latter of previous word!"
+        );
+      }
+    }
     try {
       const res = await fetch(
         `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
@@ -61,6 +68,11 @@ const HomePage = () => {
     } catch (e) {
       toast.error("Failed to validate");
     }
+  };
+  const getNextLetter = () => {
+    if (historyWord.length === 0) return null;
+    const lastWord = historyWord[historyWord.length - 1];
+    return lastWord[lastWord.length - 1];
   };
 
   return (
@@ -90,9 +102,11 @@ const HomePage = () => {
               <h3>Player {playerTurn}'s Turn</h3>{" "}
               <p className="text-red-600">({timer} seconds)</p>
             </div>
-            <div className="text-center font-medium mt-2 text-xs lg:text-sm">
-              Last Word {historyWord[historyWord.length - 1]}
-            </div>
+            {historyWord.length > 0 && (
+              <div className="text-center font-medium mt-2 text-xs lg:text-sm">
+                Last Word {getNextLetter()}
+              </div>
+            )}
             <div className="mt-4 flex items-center">
               <Input
                 type="text"
@@ -106,12 +120,23 @@ const HomePage = () => {
               </Button>
             </div>
             <div className="mx-auto max-w-80 text-center">
-              <h6 className="text-lg font-bold mt-6 mb-2">Word History</h6>
-              <div className="text-center h-96 overflow-scroll bg-white p-6 ">
-                {historyWord.map((history) => (
-                  <p>{history}</p>
-                ))}
-              </div>
+              {historyWord.length > 0 ? (
+                <div>
+                  <h6 className="text-lg font-bold mt-6 mb-2">Word History</h6>
+                  <div className="text-center h-96 overflow-scroll bg-white p-6 ">
+                    {historyWord.map((history, index) => (
+                      <p
+                        className="p-2 border rounded-lg font-medium"
+                        key={index}
+                      >
+                        {history}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <h6 className="text-lg font-bold mt-6 mb-2">No Word History</h6>
+              )}
             </div>
           </div>
         </div>
